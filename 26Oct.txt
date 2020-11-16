@@ -1,0 +1,52 @@
+120102026002082 - Updated CX, follow u p with PG
+120102323001438 - Priority 1
+120102023002186 - Follow up with Cx and update dts (PG)
+120092922000255 - Follow up
+120101222002531 - Follow up.
+120102824000578 - Discussion with Sinjith
+120101222002745 - Follow up, ask for archival.
+120102223001604 - Follow up.
+120100826003778 - Check for closer.
+120101526002517 - Check with Escalation on how to close.
+120102224004320 - Check for closer.
+120102823000717 - check for closer.
+120101326000885 - Follow up with Cx.
+
+
+
+Addressed CO question on prc_DeletedUnusedFlies and for this specific scenario, we should be able to first check the files pending deletion with the dates deleted to check if they hit the retention days that is 7 for the TFS version the customer is on . query below,
+
+SELECT dateadd(DAY,0, datediff(day,0, fr.DeletedOn)) AS deleteDate, Count(*) FROM tbl_FileReference fr
+WHERE fr.PartitionId = 1 AND fr.OwnerId = 1 AND fr.DeletedOn IS NOT NULL
+GROUP BY dateadd(DAY,0, datediff(day,0, DeletedOn))
+ORDER By deleteDate Desc
+
+Then based on that you can decide the batch size and the retention days parameter for the proc as EXEC prc_DeleteUnusedFiles 1,-1,1000 [2nd parameter is the retention days and the third is the batch size. ]
+
+
+
+Total rows in tbl_FileReference - 254
+with deleted on date available for few and Null for most of them
+
+When exeuted EXEC prc_DeleteUnusedFiles 1000
+
+Nothing happened 
+
+254
+
+EXEC prc_DeleteUnusedFiles 1, 1
+215
+
+Deleted the files which had deleteon date...all the files had today date as deleteOn value...
+So above procedure deletes all the files  which has deleteOn date set.
+
+EXEC prc_DeleteUnusedFiles 0, 1
+Did not do anything.. did not delete those records which had deleteOn as Null.... same as EXEC prc_DeleteUnusedFiles 1000
+
+
+
+
+
+
+
+
